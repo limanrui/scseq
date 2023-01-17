@@ -1,0 +1,48 @@
+---
+title: "Fig5_plot in UMAP"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+load("D:/R/TCF7L1/HSMM_monocle.Rdata")
+load("D:/R/TCF7L1/immune.combined.sct.named.RData")
+
+write.table(states_de, file = "states_de.rds", quote = FALSE, sep = '\t', row.names = FALSE, col.names = TRUE)
+
+sig_gene_names <- row.names(subset(pseudotime_de, qval < 0.01))
+p1 = plot_pseudotime_heatmap(HSMM2[sig_gene_names,], num_clusters=4,
+                             show_rownames=T, return_heatmap=T)
+
+HSMM_filtered <- HSMM[HSMM_expressed_genes,]
+my_genes <- row.names(subset(fData(HSMM_filtered),
+                             gene_short_name %in% c("Tcf7l1")))
+cds_subset <- HSMM_filtered[my_genes,]
+plot_genes_in_pseudotime(cds_subset, color_by = "seurat_clusters")
+
+plot_genes_in_pseudotime(cds_subset, color_by =  "State")
+plot_genes_in_pseudotime(cds_subset, color_by =  "celltype")
+
+head(HSMM@phenoData@data)
+head(immune.combined.sct@reductions$umap@cell.embeddings)
+immune.combined.sct@meta.data$Pseudotime <- HSMM@phenoData@data$Pseudotime 
+head(immune.combined.sct@meta.data)
+p5 <- plot_cell_trajectory(HSMM, color_by = "Pseudotime")+
+  scale_color_gradientn(values = seq(0,1,0.2),
+                        colours = c('blue','cyan','green','yellow','orange','red'))
+p5
+
+#Extract location and Pseudotime information
+mydata<- FetchData(immune.combined.sct,vars = c("UMAP_1","UMAP_2","Pseudotime"))
+
+p <- ggplot(mydata,aes(x = UMAP_1,y =UMAP_2,colour = Pseudotime))+
+  geom_point(size = 1)+
+  scale_color_gradientn(values = seq(0,1,0.2),
+                        colours = c('blue','cyan','green','yellow','orange','red'))
+
+p4 <- p + theme_bw() + theme(panel.border = element_blank(), 
+                             panel.grid.major = element_blank(),
+                             panel.grid.minor = element_blank(), 
+                             axis.line = element_line(colour = "black"))
+p4
+
+p5 / p4

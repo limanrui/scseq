@@ -1,0 +1,46 @@
+---
+title: "Fig1_violin"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+#Violin
+features=c("Meg3","Syt1","Mog","Enpp2","Slc1a3","P2ry12","Cx3cr1","Pdgfra","Fyn","Flt1","Rgs5","Aqp4","Ccdc153")
+
+VlnPlot(immune.combined.sct, features = features[1],pt.size=0,cols=my36colors)+ 
+  geom_boxplot(width=.2,col="black",fill="white")+  
+  NoLegend()
+
+VlnPlot(immune.combined.sct, features = features, pt.size = 0, ncol = 1)+
+  scale_x_discrete("")+
+  theme(
+    axis.text.x.bottom = element_blank()
+  )
+
+library(reshape2)
+vln.df=as.data.frame(immune.combined.sct[["RNA"]]@data[features,])
+vln.df$gene=rownames(vln.df)
+vln.df=melt(vln.df,id="gene")
+colnames(vln.df)[c(2,3)]=c("barcode","exp")
+
+anno=immune.combined.sct@meta.data
+anno$barcode=rownames(anno)
+
+vln.df=inner_join(vln.df,anno,by="barcode")
+vln.df$gene=factor(vln.df$gene,levels = features) 
+
+vln.df%>%ggplot(aes(celltype,exp))+geom_violin(aes(fill=gene),scale = "width")+ 
+  #geom_boxplot(width=.1,col="black",fill="white")+
+  theme(axis.text.x=element_text(angle = 90, vjust = 0.5, hjust=1), axis.ticks.x = element_line())+
+  facet_grid(vln.df$gene~.,scales = "free_y")+
+  scale_x_discrete("")+scale_y_continuous("")+
+  scale_fill_manual(values=my36colors)+
+  theme_bw()+
+  theme(
+    axis.text.x.bottom = element_text(angle = 45,hjust = 1,vjust = 1),
+    panel.grid.major = element_blank(),panel.grid.minor = element_blank(),
+    legend.position = "none"
+  )
+
+ggsave("violin.pdf", width = 8, height = 20, units = "cm")

@@ -1,0 +1,18 @@
+---
+title: "FigS3_Complex_heatmap"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+library(ComplexHeatmap)
+
+i = 1
+pathway.union <- union(cc.list[[i]]@netP$pathways, cc.list[[i+1]]@netP$pathways)
+ht1 = netAnalysis_signalingRole_heatmap(cc.list[[i]], pattern = "outgoing", signaling = pathway.union, title = names(cc.list)[i], width = 5, height = 6, color.heatmap = "OrRd")
+ht2 = netAnalysis_signalingRole_heatmap(cc.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = names(cc.list)[i+1], width = 5, height = 6, color.heatmap = "OrRd")
+draw(ht1 + ht2, ht_gap = unit(0.5, "cm"))
+
+ht1 = netAnalysis_signalingRole_heatmap(cc.list[[i]], pattern = "incoming", signaling = pathway.union, title = names(cc.list)[i], width = 5, height = 6, color.heatmap = "GnBu")
+ht2 = netAnalysis_signalingRole_heatmap(cc.list[[i+1]], pattern = "incoming", signaling = pathway.union, title = names(cc.list)[i+1], width = 5, height = 6, color.heatmap = "GnBu")
+draw(ht1 + ht2, ht_gap = unit(0.5, "cm"))

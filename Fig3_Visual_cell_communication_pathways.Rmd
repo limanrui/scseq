@@ -1,0 +1,31 @@
+---
+title: "Fig3_Visual_cell_communication_pathways"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+library(CellChat)
+library(tidyverse)
+library(ggalluvial)
+library(Seurat)
+library(data.table)
+library(ggsci)
+
+#Visual cell communication
+pathways.show <- c("OPIOID") 
+pathways.show <- c("BMP") 
+pathways.show <- c("CSF") 
+pathways.show <- c("PSAP") 
+pathways.show <- c("WNT") 
+pathways.show <- c("VISFATIN") 
+pathways.show <- c("TGFb") 
+pathways.show <- c("FGF") 
+pathways.show <- c("VEGF") 
+pathways.show <- c("ACTIVIN") 
+weight.max <- getMaxWeight(cc.list, slot.name = c("netP"), attribute = pathways.show) # control the edge weights across different datasets
+par(mfrow = c(1,2), xpd=TRUE)
+for (i in 1:length(cc.list)) {
+  netVisual_aggregate(cc.list[[i]], signaling = pathways.show, layout = "chord", edge.weight.max = weight.max[1], edge.width.max = 10, signaling.name = paste(pathways.show, names(cc.list)[i]))
+}
+

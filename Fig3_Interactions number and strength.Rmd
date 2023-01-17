@@ -1,0 +1,23 @@
+---
+title: "Fig3_Interactions number and strength"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+##Cell interaction number comparison network diagram
+weight.max=getMaxWeight(cc.list,attribute = c("idents","count"))
+par(mfrow = c(1,2), xpd=TRUE)
+netVisual_circle(cc.list[[1]]@net$count,weight.scale = T,label.edge = F,
+                 edge.weight.max =weight.max[2],edge.width.max = 12,title.name = "Control" )
+
+netVisual_circle(cc.list[[2]]@net$count,weight.scale = T,label.edge = F,
+                 edge.weight.max =weight.max[2],edge.width.max = 12,title.name = "mTBI" )
+                 
+###Cell interaction strength comparison network diagram
+num.link <- sapply(cc.list, function(x) {rowSums(x@net$count) + colSums(x@net$count)-diag(x@net$count)})
+weight.MinMax <- c(min(num.link), max(num.link)) # control the dot size in the different datasets
+gg <- list()
+for (i in 1:length(cc.list)) {
+  gg[[i]] <- netAnalysis_signalingRole_scatter(cc.list[[i]], title = names(cc.list)[i], weight.MinMax = weight.MinMax)
+}
+patchwork::wrap_plots(plots = gg)

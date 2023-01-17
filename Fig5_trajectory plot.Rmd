@@ -1,0 +1,43 @@
+---
+title: "Fig5_trajectory plot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#plot_cell_trajectory
+library(ggsci)
+colnames(pData(HSMM))
+names(wes_palette)
+pal <- wes_palette("Zissou1",100,type="continuous")
+pData(HSMM)$Tcf7l1=log2(exprs(HSMM)["Tcf7l1",]+1)
+p1=plot_cell_trajectory(HSMM, color_by = "Tcf7l1")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Prex2=log2(exprs(HSMM)["Prex2",]+1)
+p2=plot_cell_trajectory(HSMM, color_by = "Prex2")  + scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Maml3=log2(exprs(HSMM)["Maml3",]+1)
+p3=plot_cell_trajectory(HSMM, color_by = "Maml3")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Nrxn3=log2(exprs(HSMM)["Nrxn3",]+1)
+p4=plot_cell_trajectory(HSMM, color_by = "Nrxn3")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Erbb4=log2(exprs(HSMM)["Erbb4",]+1)
+p5=plot_cell_trajectory(HSMM, color_by = "Erbb4")  + scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Csmd1=log2(exprs(HSMM)["Csmd1",]+1)
+p6=plot_cell_trajectory(HSMM, color_by = "Csmd1")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Adamts18=log2(exprs(HSMM)["Adamts18",]+1)
+p7=plot_cell_trajectory(HSMM, color_by = "Adamts18")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Wdr17=log2(exprs(HSMM)["Wdr17",]+1)
+p8=plot_cell_trajectory(HSMM, color_by = "Wdr17")  + scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Fars2=log2(exprs(HSMM)["Fars2",]+1)
+p9=plot_cell_trajectory(HSMM, color_by = "Fars2")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+pData(HSMM)$Phkg1=log2(exprs(HSMM)["Phkg1",]+1)
+p10=plot_cell_trajectory(HSMM, color_by = "Phkg1")  +scale_color_gradientn(colours = viridis::viridis(20))
+                                                 
+library(patchwork)
+p1+p2+p3+p4+p5+p6+p7+p8+p9+p10
