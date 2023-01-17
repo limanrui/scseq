@@ -1,0 +1,79 @@
+R version 4.1.3 (2022-03-10)
+Platform: x86_64-w64-mingw32/x64 (64-bit)
+Running under: Windows 10 x64 (build 22000)
+
+Matrix products: default
+
+locale:
+[1] LC_COLLATE=Chinese (Simplified)_China.936 
+[2] LC_CTYPE=Chinese (Simplified)_China.936   
+[3] LC_MONETARY=Chinese (Simplified)_China.936
+[4] LC_NUMERIC=C                              
+[5] LC_TIME=Chinese (Simplified)_China.936    
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods  
+[7] base     
+
+loaded via a namespace (and not attached):
+  [1] colorspace_2.0-3            rjson_0.2.21               
+  [3] ellipsis_0.3.2              circlize_0.4.16            
+  [5] XVector_0.34.0              GenomicRanges_1.46.1       
+  [7] GlobalOptions_0.1.2         fs_1.5.2                   
+  [9] clue_0.3-61                 rstudioapi_0.14            
+ [11] remotes_2.4.2               bit64_4.0.5                
+ [13] AnnotationDbi_1.56.2        fansi_1.0.3                
+ [15] codetools_0.2-18            R.methodsS3_1.8.2          
+ [17] doParallel_1.0.17           cachem_1.0.6               
+ [19] knitr_1.40                  pkgload_1.3.0              
+ [21] jsonlite_1.8.0              annotate_1.72.0            
+ [23] cluster_2.1.2               png_0.1-7                  
+ [25] R.oo_1.25.0                 graph_1.72.0               
+ [27] shiny_1.7.2                 BiocManager_1.30.18        
+ [29] compiler_4.1.3              httr_1.4.4                 
+ [31] assertthat_0.2.1            Matrix_1.5-1               
+ [33] fastmap_1.1.0               lazyeval_0.2.2             
+ [35] cli_3.4.0                   later_1.3.0                
+ [37] htmltools_0.5.3             prettyunits_1.1.1          
+ [39] tools_4.1.3                 gtable_0.3.1               
+ [41] glue_1.6.2                  GenomeInfoDbData_1.2.7     
+ [43] reshape2_1.4.4              dplyr_1.0.10               
+ [45] Rcpp_1.0.9                  Biobase_2.54.0             
+ [47] vctrs_0.4.1                 Biostrings_2.62.0          
+ [49] iterators_1.0.14            xfun_0.33                  
+ [51] stringr_1.4.1               ps_1.7.1                   
+ [53] mime_0.12                   miniUI_0.1.1.1             
+ [55] lifecycle_1.0.2             devtools_2.4.5             
+ [57] XML_3.99-0.10               zlibbioc_1.40.0            
+ [59] scales_1.2.1                promises_1.2.0.1           
+ [61] MatrixGenerics_1.6.0        parallel_4.1.3             
+ [63] SummarizedExperiment_1.24.0 RColorBrewer_1.1-3         
+ [65] curl_4.3.2                  yaml_2.3.5                 
+ [67] ComplexHeatmap_2.13.3       memoise_2.0.1              
+ [69] ggplot2_3.3.6               stringi_1.7.6              
+ [71] RSQLite_2.2.17              S4Vectors_0.32.4           
+ [73] foreach_1.5.2               BiocGenerics_0.40.0        
+ [75] pkgbuild_1.3.1              shape_1.4.6                
+ [77] GenomeInfoDb_1.30.1         rlang_1.0.5                
+ [79] pkgconfig_2.0.3             matrixStats_0.62.0         
+ [81] bitops_1.0-7                AUCell_1.16.0              
+ [83] evaluate_0.17               lattice_0.20-45            
+ [85] purrr_0.3.4                 htmlwidgets_1.5.4          
+ [87] bit_4.0.4                   processx_3.7.0             
+ [89] tidyselect_1.1.2            GSEABase_1.56.0            
+ [91] plyr_1.8.7                  magrittr_2.0.3             
+ [93] R6_2.5.1                    IRanges_2.28.0             
+ [95] generics_0.1.3              profvis_0.3.7              
+ [97] DelayedArray_0.20.0         DBI_1.1.3                  
+ [99] pillar_1.8.1                KEGGREST_1.34.0            
+[101] RCurl_1.98-1.8              tibble_3.1.8               
+[103] crayon_1.5.2                utf8_1.2.2                 
+[105] plotly_4.10.0               rmarkdown_2.16             
+[107] urlchecker_1.0.1            GetoptLong_1.0.5           
+[109] usethis_2.1.6               grid_4.1.3                 
+[111] data.table_1.14.2           blob_1.2.3                 
+[113] callr_3.7.2                 digest_0.6.29              
+[115] xtable_1.8-4                tidyr_1.2.1                
+[117] httpuv_1.6.6                R.utils_2.12.0             
+[119] stats4_4.1.3                munsell_0.5.0              
+[121] viridisLite_0.4.1           sessioninfo_1.2.2      
