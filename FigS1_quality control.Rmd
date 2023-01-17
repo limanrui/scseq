@@ -1,0 +1,50 @@
+---
+title: "FigS1_quality control"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+#calculating the cell cycle
+CaseMatch(c(cc.genes$s.genes,cc.genes$g2m.genes),VariableFeatures(immune.combined.sct ))
+g2m_genes = cc.genes$g2m.genes
+g2m_genes = CaseMatch(search = g2m_genes, match = rownames(immune.combined.sct))
+s_genes = cc.genes$s.genes
+s_genes = CaseMatch(search = s_genes, match = rownames(immune.combined.sct))
+scRNA1 <- CellCycleScoring(object=immune.combined.sct,  g2m.features=g2m_genes,  s.features=s_genes)
+scRNAa <- RunPCA(scRNA1, features = c(s_genes, g2m_genes))
+p <- DimPlot(scRNAa, reduction = "pca", group.by = "Phase")
+p
+ggsave("cellcycle_pca.pdf", p, width = 8, height = 6)
+
+blue <- "#619CD6"
+green <- "#89C32E"
+VlnPlot(scRNAa, 
+        features = c("G2M.Score"),
+        cols =c(blue, green), 
+        pt.size=0)+
+  geom_boxplot(width=.2,col="black",fill="white")
+
+VlnPlot(scRNAa, 
+        features = c("S.Score"),
+        cols =c(blue, green), 
+        pt.size=0)+
+  geom_boxplot(width=.2,col="black",fill="white")
+
+VlnPlot(scRNAa, 
+        features = c("percent.mt"),
+        cols =c(blue, green), 
+        pt.size=0)+
+  geom_boxplot(width=.2,col="black",fill="white")
+
+VlnPlot(scRNAa, 
+        features = c("nCount_RNA"),
+        cols =c(blue, green), 
+        pt.size=0)+
+  geom_boxplot(width=.2,col="black",fill="white")
+
+VlnPlot(scRNAa, 
+        features = c("nFeature_RNA"),
+        cols =c(blue, green), 
+        pt.size=0)+
+  geom_boxplot(width=.2,col="black",fill="white")

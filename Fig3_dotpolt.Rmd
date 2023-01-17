@@ -1,0 +1,20 @@
+---
+title: "Fig3_dotpolt"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+##bubble plot
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(patchwork)
+
+levels(cellchat.Control@idents)
+
+library(viridis)
+library(scales)
+show_col(viridis_pal(option = "A")(100))
+viridis=viridis_pal(option = "B")(100) # n = number of colors Seeked 
+netVisual_bubble(cc.Chontrol, sources.use = c(1:7), targets.use = c(1:7), remove.isolate = FALSE,color.heatmap = c("Spectral", "viridis"))
+netVisual_bubble(cc.mTBI, sources.use = c(1:7), targets.use = c(1:7), remove.isolate = FALSE)

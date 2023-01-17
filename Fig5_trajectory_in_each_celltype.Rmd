@@ -1,0 +1,18 @@
+---
+title: "Fig5_trajectory_in_each_celltype"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+library(monocle)
+library(tidyverse)
+
+plot_cell_trajectory(HSMM, color_by = "Pseudotime")
+
+plot_cell_trajectory(HSMM, color_by = "State")
+
+plot_cell_trajectory(HSMM, color_by = "celltype")
+
+plot_cell_trajectory(HSMM, color_by = "State") +
+  facet_wrap(~State, nrow = 5)

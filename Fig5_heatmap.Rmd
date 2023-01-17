@@ -1,0 +1,28 @@
+---
+title: "Fig5_heatmap"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#heat map analysis at branch point 
+library(RColorBrewer)
+BEAM_res <- BEAM(HSMM, branch_point = 2, cores = 7)
+BEAM_res <- BEAM_res[order(BEAM_res$qval),]
+BEAM_res <- BEAM_res[,c("gene_short_name", "pval", "qval")]
+save(BEAM_res,file = "BEAM_res.Rdata")
+
+load("D:/R/TCF7L1/BEAM_res.Rdata")
+load("D:/R/TCF7L1/HSMM.Rdata")
+tmp1=plot_genes_branched_heatmap(HSMM[row.names(subset(BEAM_res,
+                                                       qval < 1e-4)),],
+                                 branch_point = 2,
+                                 branch_colors = c("#979797","#F05662","#7990C8"),
+                                 branch_labels = c("State 3","State 4"),
+                                 #hmcols = colorRampPalette(rev(brewer.pal(9,"PRGn")))(62),
+                                 num_clusters = 3,
+                                 cores = 1,
+                                 use_gene_short_name = T,
+                                 show_rownames = F,
+                                 return_heatmap = T)
+> tmp1[["ph_res"]][["tree_row"]]
+pdf("branched_heatmap.pdf",width = 5,height = 8)

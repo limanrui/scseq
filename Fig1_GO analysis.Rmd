@@ -1,0 +1,147 @@
+---
+title: "Fig1_GO analysis"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#GO analysis
+load("D:/R/TCF7L1/0.1degs.normalize.Rdata")
+library(Seurat)
+library(patchwork)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(tidyverse)
+
+sig_dge.all <- subset(degs.normalize, p_val_adj<0.05&abs(avg_log2FC)>0.15) 
+
+sig_dge.Neuron_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Neuron") 
+ego_Neuron <- enrichGO(gene          = row.names(sig_dge.Neuron_up),                     
+                       #universe     = row.names(dge.celltype),                     
+                       OrgDb         = 'org.Mm.eg.db',                     
+                       keyType       = 'SYMBOL',                     
+                       ont           = "ALL",  
+                       pAdjustMethod = "BH",                     
+                       pvalueCutoff  = 0.01,                     
+                       qvalueCutoff  = 0.05) 
+ego_Neuron <- data.frame(ego_Neuron) 
+write.csv(ego_Neuron,'enrichGO_Neuron.csv') 
+#View(ego_Neuron) 
+ego_Neuron$Group='Neuron'
+
+sig_dge.Astrocyte_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Astrocyte & NSC") 
+ego_Astrocyte <- enrichGO(gene          = row.names(sig_dge.Astrocyte_up),                     
+                          #universe     = row.names(dge.celltype),                     
+                          OrgDb         = 'org.Mm.eg.db',                     
+                          keyType       = 'SYMBOL',                     
+                          ont           = "ALL", 
+                          pAdjustMethod = "BH",                     
+                          pvalueCutoff  = 0.01,                     
+                          qvalueCutoff  = 0.05) 
+ego_Astrocyte <- data.frame(ego_Astrocyte) 
+write.csv(ego_Astrocyte,'enrichGO_Astrocyte.csv') 
+ego_Astrocyte$Group='Astrocyte'
+
+sig_dge.Oligodendrocyte_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Oligodendrocyte")
+ego_Oligodendrocyte <- enrichGO(gene          = row.names(sig_dge.Oligodendrocyte_up),                     
+                                #universe     = row.names(dge.celltype),                     
+                                OrgDb         = 'org.Mm.eg.db',                     
+                                keyType       = 'SYMBOL',                     
+                                ont           = "ALL",  
+                                pAdjustMethod = "BH",                     
+                                pvalueCutoff  = 0.01,                     
+                                qvalueCutoff  = 0.05) 
+ego_Oligodendrocyte <- data.frame(ego_Oligodendrocyte) 
+write.csv(ego_Oligodendrocyte,'enrichGO_Oligodendrocyte.csv') 
+#View(ego_Oligodendrocyte) 
+ego_Oligodendrocyte$Group='Oligodendrocyte'
+
+sig_dge.Microglia_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Microglia") 
+ego_Microglia <- enrichGO(gene          = row.names(sig_dge.Microglia_up),                     
+                          #universe     = row.names(dge.celltype),                     
+                          OrgDb         = 'org.Mm.eg.db',                     
+                          keyType       = 'SYMBOL',                     
+                          ont           = "ALL",  
+                          pAdjustMethod = "BH",                     
+                          pvalueCutoff  = 0.01,                     
+                          qvalueCutoff  = 0.05) 
+ego_Microglia <- data.frame(ego_Microglia) 
+write.csv(ego_Microglia,'enrichGO_Microglia.csv') 
+#View(ego_Microglia) 
+ego_Microglia$Group='Microglia'
+
+sig_dge.OPC_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="OPC") 
+ego_OPC <- enrichGO(gene          = row.names(sig_dge.OPC_up),                     
+                    #universe     = row.names(dge.celltype),                     
+                    OrgDb         = 'org.Mm.eg.db',                     
+                    keyType       = 'SYMBOL',                     
+                    ont           = "ALL",  
+                    pAdjustMethod = "BH",                     
+                    pvalueCutoff  = 0.01,                     
+                    qvalueCutoff  = 0.05) 
+ego_OPC <- data.frame(ego_OPC) 
+write.csv(ego_OPC,'enrichGO_OPC.csv') 
+#View(ego_OPC) 
+ego_OPC$Group='OPC'
+
+sig_dge.Ependymal_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Ependymal") 
+ego_Ependymal <- enrichGO(gene          = row.names(sig_dge.Ependymal_up),                     
+                          #universe     = row.names(dge.celltype),                     
+                          OrgDb         = 'org.Mm.eg.db',                     
+                          keyType       = 'SYMBOL',                     
+                          ont           = "ALL", 
+                          pAdjustMethod = "BH",                     
+                          pvalueCutoff  = 0.01,                     
+                          qvalueCutoff  = 0.05) 
+ego_Ependymal <- data.frame(ego_Ependymal) 
+write.csv(ego_Ependymal,'enrichGO_Ependymal.csv') 
+#View(ego_Ependymal) 
+ego_Ependymal$Group='Ependymal'
+
+sig_dge.Endocelia_up <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="Endocelia") 
+ego_Endocelia <- enrichGO(gene          = row.names(sig_dge.Endocelia_up),                     
+                          #universe     = row.names(dge.celltype),                     
+                          OrgDb         = 'org.Mm.eg.db',                     
+                          keyType       = 'SYMBOL',                     
+                          ont           = "ALL",
+                          pAdjustMethod = "BH",                     
+                          pvalueCutoff  = 0.01,                     
+                          qvalueCutoff  = 0.05) 
+ego_Endocelia <- data.frame(ego_Endocelia) 
+write.csv(ego_Endocelia,'enrichGO_Endocelia.csv') 
+#View(ego_Endocelia) 
+ego_Endocelia$Group='Endocelia'
+
+Neuron=ego_Neuron[1:5,]
+Astrocyte=ego_Astrocyte[1:5,]
+Oligodendrocyte=ego_Oligodendrocyte[1:5,]
+Microglia=ego_Microglia[1:5,]
+OPC=ego_OPC[1:5,]
+Ependymal=ego_Ependymal[1:5,]
+Endocelia=ego_Endocelia[1:5,]
+
+all <- rbind(Neuron,Astrocyte,Oligodendrocyte,Microglia,OPC,Ependymal,Endocelia)
+
+a=all$Description 
+neuron=ego_Neuron[ego_Neuron$Description%in%a,] 
+astrocyte=ego_Astrocyte[ego_Astrocyte$Description%in%a,] 
+oligodendrocyte=ego_Oligodendrocyte[ego_Oligodendrocyte$Description%in%a,] 
+microglia=ego_Microglia[ego_Microglia$Description%in%a,] 
+opc=ego_OPC[ego_OPC$Description%in%a,] 
+ependymal=ego_Ependymal[ego_Ependymal$Description%in%a,] 
+endocelia=ego_Endocelia[ego_Endocelia$Description%in%a,] 
+all <- all <- rbind(neuron,astrocyte,oligodendrocyte,microglia,opc,ependymal,endocelia)
+write.csv(all,"all.csv")
+all=read.csv(file = "all.csv")
+
+library(forcats) 
+all$GeneRatio <- c(0.135338346,0.105263158,0.095596133,0.077336198,0.071965628,0.081632653,0.055853921,0.02792696,0.042964554,0.040816327,0.026852846,0.021482277,0.03329753,0.029001074,0.086513995,0.063613232,0.086513995,0.086513995,0.071246819,0.078880407,0.071246819,0.058524173,0.040712468,0.045801527,0.055979644,0.053435115,0.040712468,0.053435115,0.050890585,0.027989822,0.030534351,0.025445293,0.025445293,0.025445293,0.038167939,0.043256997,0.022900763,0.025445293,0.051839465,0.051839465,0.050167224,0.071906355,0.070234114,0.066889632,0.051839465,0.051839465,0.051839465,0.035117057,0.028428094,0.038461538,0.033444816,0.028428094,0.043478261,0.035117057,0.02173913,0.04180602,0.04180602,0.038461538,0.040133779,0.04180602,0.091666667,0.086111111,0.044444444,0.061111111,0.075,0.080555556,0.077777778,0.069444444,0.05,0.055555556,0.036111111,0.041666667,0.036111111,0.041666667,0.05,0.041666667,0.022222222,0.025,0.082051282,0.071794872,0.066666667,0.056410256,0.087179487,0.071794872,0.056410256,0.061538462,0.041025641,0.139908257,0.128440367,0.110091743,0.074541284,0.048165138,0.119760479,0.113772455,0.071856287,0.041916168,0.077844311,0.089820359,0.071856287,0.065868263,0.041916168,0.05988024,0.053892216)
+
+all$Description <- as.factor(all$Description) 
+all$Description <- fct_inorder(all$Description)
+
+ggplot(all, aes(Group, Description)) +
+  geom_point(aes(color=p.adjust, size=GeneRatio))+theme_bw()+
+  theme(panel.grid = element_blank(),
+        axis.text.x=element_text(angle=90,hjust = 1,vjust=0.5))+
+  scale_color_gradientn(colours =rainbow(10))+
+  labs(x=NULL,y=NULL)+guides(size=guide_legend(order=1))

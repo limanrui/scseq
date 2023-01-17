@@ -1,0 +1,122 @@
+---
+title: "Fig4_volcano"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+##Volcano Plot
+Astrocytes <- subset(immune.combined.sct ,idents = "Astrocytes")
+Idents(Astrocytes) <- "orig.ident"
+degdf <- FindMarkers(Astrocytes,ident.1 = "Control",ident.2 = "mTBI")
+degdf$symbol <- rownames(degdf)
+logFC_t=0
+P.Value_t = 1e-3
+degdf$change = ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC < -0.5,"down",
+                      ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC > 0.5,"up","stable"))
+p=ggplot(degdf, aes(avg_log2FC,  -log10(p_val))) +
+  geom_point(alpha=0.4, size=2.8, aes(color=change)) +
+  ylab("-log10(Pvalue)")+
+  scale_color_manual(values=c("green", "grey","red"))+
+  geom_hline(yintercept = -log10(P.Value_t),lty=4,col="black",lwd=0.8) +
+  theme_bw()
+p
+
+data_selected <- degdf[c("Plp1","Gm42418","Kcnq3","Agbl4","Kcnip4","Wdr17","Mgll","Efna5","Fgfr2","Luzp2"),]
+p + geom_label_repel(data=data_selected,
+                     aes(label=rownames(data_selected)))+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),axis.line = element_line(colour = "black"))
+
+#late aNSCs
+late <- subset(immune.combined.sct ,idents = "late aNSCs")
+Idents(late) <- "orig.ident"
+degdf <- FindMarkers(late,ident.1 = "Control",ident.2 = "mTBI")
+degdf$symbol <- rownames(degdf)
+logFC_t=0
+P.Value_t = 1e-3
+degdf$change = ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC < -0.5,"down",
+                      ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC > 0.5,"up","stable"))
+p=ggplot(degdf, aes(avg_log2FC,  -log10(p_val))) +
+  geom_point(alpha=0.4, size=2.8, aes(color=change)) +
+  ylab("-log10(Pvalue)")+
+  scale_color_manual(values=c("green", "grey","red"))+
+  geom_hline(yintercept = -log10(P.Value_t),lty=4,col="black",lwd=0.8) +
+  theme_bw()
+p
+
+data_selected <- degdf[c("Togaram1","Mex3a","Plekha5","Plp1","Gm42418","Tac1","Zc3h13","Gm26936","Pigf","Eif5a"),]
+p + geom_label_repel(data=data_selected,
+                     aes(label=rownames(data_selected)))+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),axis.line = element_line(colour = "black"))
+
+#early aNSC
+early <- subset(immune.combined.sct ,idents = "early aNSC")
+Idents(early) <- "orig.ident"
+degdf <- FindMarkers(early,ident.1 = "Control",ident.2 = "mTBI")
+degdf$symbol <- rownames(degdf)
+logFC_t=0
+P.Value_t = 1e-3
+degdf$change = ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC < -0.5,"down",
+                      ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC > 0.5,"up","stable"))
+p=ggplot(degdf, aes(avg_log2FC,  -log10(p_val))) +
+  geom_point(alpha=0.4, size=2.8, aes(color=change)) +
+  ylab("-log10(Pvalue)")+
+  scale_color_manual(values=c("green", "grey","red"))+
+  geom_hline(yintercept = -log10(P.Value_t),lty=4,col="black",lwd=0.8) +
+  theme_bw()
+p
+
+data_selected <- degdf[("Mir670hg","Cmip","Cpq","Ubash3b","Bbs9","Wdr17","Dad1","Fam171b","Epha4","Mcu"),]
+p + geom_label_repel(data=data_selected,
+                     aes(label=rownames(data_selected)))+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),axis.line = element_line(colour = "black"))
+
+#qNSC
+qNSC <- subset(immune.combined.sct ,idents = "qNSC")
+Idents(qNSC) <- "orig.ident"
+degdf <- FindMarkers(qNSC,ident.1 = "Control",ident.2 = "mTBI")
+degdf$symbol <- rownames(degdf)
+logFC_t=0
+P.Value_t = 1e-3
+degdf$change = ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC < -0.5,"down",
+                      ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC > 0.5,"up","stable"))
+p=ggplot(degdf, aes(avg_log2FC,  -log10(p_val))) +
+  geom_point(alpha=0.4, size=2.8, aes(color=change)) +
+  ylab("-log10(Pvalue)")+
+  scale_color_manual(values=c("green", "grey","red"))+
+  geom_hline(yintercept = -log10(P.Value_t),lty=4,col="black",lwd=0.8) +
+  theme_bw()
+p
+
+data_selected <- degdf[c("Snhg11","Plp1","Cmss1","Dlg5","Minos1","Paqr8","Zkscan3","Bfar"),]
+p + geom_label_repel(data=data_selected,
+                     aes(label=rownames(data_selected)))+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),axis.line = element_line(colour = "black"))
+
+#Neuroblasts
+Neuroblasts <- subset(immune.combined.sct ,idents = "Neuroblasts")
+Idents(Neuroblasts) <- "orig.ident"
+degdf <- FindMarkers(Neuroblasts,ident.1 = "Control",ident.2 = "mTBI")
+degdf$symbol <- rownames(degdf)
+logFC_t=0
+P.Value_t = 1e-3
+degdf$change = ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC < 0,"down",
+                      ifelse(degdf$p_val < P.Value_t & degdf$avg_log2FC > 0,"up","stable"))
+p=ggplot(degdf, aes(avg_log2FC,  -log10(p_val))) +
+  geom_point(alpha=0.4, size=2.8, aes(color=change)) +
+  ylab("-log10(Pvalue)")+
+  scale_color_manual(values=c("green", "grey","red"))+
+  geom_hline(yintercept = -log10(P.Value_t),lty=4,col="black",lwd=0.8) +
+  theme_bw()
+p
+
+data_selected <- degdf[c("Plxna4","Kcnip4","Trim35","Bmper","Syp","Tac1","Dscam","Sorbs2os","Il1rapl1"),]
+p + geom_label_repel(data=data_selected,
+                     aes(label=rownames(data_selected)))+theme_bw()+
+  theme(panel.border = element_blank(),panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),axis.line = element_line(colour = "black"))
+#####################################

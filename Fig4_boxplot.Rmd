@@ -1,0 +1,124 @@
+---
+title: "Fig4_boxplot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#################################################################
+#Differential gene expression
+setwd("D:/R/TCF7L1/subtypedeg/")
+immune.combined.sct <- NormalizeData(immune.combined.sct, verbose=F)
+table(immune.combined.sct@meta.data$orig.ident)
+table(immune.combined.sct@meta.data$celltype)
+type=c("Astrocytes","Neuroblasts","early aNSC","qNSC","late aNSCs")
+r.deg=data.frame()
+
+for (i in 1:5) {
+  Idents(immune.combined.sct)="celltype"
+  deg=FindMarkers(immune.combined.sct,ident.1 = "Control",ident.2 = "mTBI",
+                  group.by = "orig.ident",subset.ident =type[i] )
+  
+  write.csv(deg,file = paste0( type[i],'deg.csv') )
+  deg$celltype=type[i]
+  deg$unm=i-1
+  r.deg=rbind(deg,r.deg)
+  
+}
+
+r.deg$gene=rownames(r.deg)
+write.table (r.deg, file ="r.subtypedeg")
+r.deg <- subset(r.deg, p_val_adj < 0.05 & abs(avg_log2FC) > 0.25)
+r.deg$threshold <- as.factor(ifelse(r.deg$avg_log2FC > 0 , 'Up', 'Down'))
+
+library(ggpubr)
+library(ggplot2)
+library("ggsignif")
+
+#Astrocytes
+Astrocytes <- subset(immune.combined.sct ,idents = "Astrocytes")
+exp=Astrocytes@assays$RNA@data["Plp1",]
+exp=Astrocytes@assays$RNA@data["Fgfr2",]
+exp.m=Astrocytes@meta.data
+exp.m$exp=exp
+Cohort=Astrocytes@meta.data[["orig.ident"]]
+exp.m$Cohort=Cohort
+my_comparisons=list(c("Control", "mTBI"))
+Plp1=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Plp1")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Fgfr2=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Fgfr2")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+
+Plp1+Fgfr2
+#Neuroblasts
+Neuroblasts <- subset(immune.combined.sct ,idents = "Neuroblasts")
+exp=Neuroblasts@assays$RNA@data["Kcnip4",]
+exp=Neuroblasts@assays$RNA@data["Ppp1r2",]
+exp.m=Neuroblasts@meta.data
+exp.m$exp=exp
+Cohort=Neuroblasts@meta.data[["orig.ident"]]
+exp.m$Cohort=Cohort
+my_comparisons=list(c("Control", "mTBI"))
+Kcnip4=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Kcnip4")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Ppp1r2=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Ppp1r2")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Kcnip4+Ppp1r2
+
+#early aNSC
+early<- subset(immune.combined.sct ,idents = "early aNSC")
+exp=early@assays$RNA@data["Malat1",]
+
+exp=early@assays$RNA@data["Calm2",]
+exp.m=early@meta.data
+exp.m$exp=exp
+Cohort=early@meta.data[["orig.ident"]]
+exp.m$Cohort=Cohort
+my_comparisons=list(c("Control", "mTBI"))
+Malat1=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Malat1")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Calm2=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Calm2")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Malat1+Calm2
+
+#qNSC
+qNSC <- subset(immune.combined.sct ,idents = "qNSC")
+exp=qNSC@assays$RNA@data["Htra1",]
+
+exp=qNSC@assays$RNA@data["Snhg11",]
+exp.m=qNSC@meta.data
+exp.m$exp=exp
+Cohort=qNSC@meta.data[["orig.ident"]]
+exp.m$Cohort=Cohort
+my_comparisons=list(c("Control", "mTBI"))
+Htra1=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Htra1")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Snhg11=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Snhg11")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Snhg11+Htra1
+
+#late aNSC
+late <- subset(immune.combined.sct ,idents = "late aNSCs")
+exp=late@assays$RNA@data["Plekha5",]
+
+exp=late@assays$RNA@data["Tac1",]
+exp.m=late@meta.data
+exp.m$exp=exp
+Cohort=late@meta.data[["orig.ident"]]
+exp.m$Cohort=Cohort
+my_comparisons=list(c("Control", "mTBI"))
+Plekha5=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Plekha5")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Tac1=ggplot(exp.m,aes(Cohort,exp,fill=Cohort,split.by = 'orig.ident')) +  geom_violin()+theme_classic()+  labs(y= 'Expression',x="Group")+  geom_signif(comparisons = my_comparisons,step_increase = 0.1,map_signif_level = F,test = t.test,size=1,textsize = 6)+  geom_jitter(shape=16, position=position_jitter(0.2))+
+  ggtitle("Tac1")+
+  scale_fill_manual(values= c("#BC3C29","#0072B5"))+  theme(plot.title = element_text(size =18,hjust = 0.5))+NoLegend()+geom_boxplot(width=.1,col="black",fill="white")+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+Plekha5+Tac1
+

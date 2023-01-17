@@ -1,0 +1,24 @@
+---
+title: "Fig4_SCENIC heatmap"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+#scenic  heatmap
+library(pheatmap)
+cellInfo <- readRDS("int/cellInfo.Rds")
+celltype = subset(cellInfo,select = 'celltype')
+AUCmatrix <- t(AUCmatrix)
+BINmatrix <- t(BINmatrix)
+
+my.regulons <- rownames(AUCmatrix)[40:90]
+myAUCmatrix <- AUCmatrix[rownames(AUCmatrix)%in%my.regulons,]
+myBINmatrix <- BINmatrix[rownames(BINmatrix)%in%my.regulons,]
+
+pheatmap(myAUCmatrix, show_colnames=F, annotation_col=celltype )
+
+pheatmap(myBINmatrix, show_colnames=F, annotation_col=celltype,
+         color = colorRampPalette(colors = c("white","black"))(100))
+
+

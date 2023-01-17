@@ -1,0 +1,51 @@
+---
+title: "Fig1_UMAP.Rmd"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+my36colors <- c('#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3','#57C3F3', '#476D87','#E95C59', '#E59CC4', '#AB3282', '#23452F', '#BD956A', '#8C549C', '#585658','#9FA3A8', '#E0D4CA', '#5F3D69', '#C5DEBA', '#58A4C3', '#E4C755', '#F7F398','#AA9A59', '#E63863', '#E39A35', '#C1E6F3', '#6778AE', '#91D0BE', '#B53E2B','#712820', '#DCC1DD', '#CCE0F5', '#CCC9E6', '#625D9E', '#68A180', '#3A6963','#968175')
+
+my7colors <- c( '#58A4C3','#AA9A59','#E63863','#E39A35','#6778AE', '#91D0BE', '#B53E2B','#712820', '#DCC1DD', '#CCE0F5', '#CCC9E6', '#625D9E', '#68A180', '#3A6963','#968175')
+
+#UMAP clustered in celltype
+
+DimPlot(immune.combined.sct,label = TRUE,cols=my7colors,pt.size = 1)
+
+DimPlot(immune.combined.sct,cols=my7colors,pt.size = 1)
+
+DimPlot(immune.combined.sct, reduction = "umap",split.by = "orig.ident",pt.size = 1,cols = my7colors)
+
+VlnPlot(immune.combined.sct, features = "nFeature_RNA",pt.size=0,cols=my7colors)+geom_boxplot(width=.2,col="black",fill="white")
+VlnPlot(immune.combined.sct, features = "nCount_RNA",pt.size=0,cols=my7colors)+geom_boxplot(width=.2,col="black",fill="white")
+
+#UMAP for representative markers
+features=c("Meg3","Syt1","Mog","Enpp2","Slc1a3","P2ry12","Cx3cr1","Pdgfra","Fyn","Flt1","Rgs5","Aqp4","Ccdc153")
+mainmarkers <- features
+
+library(ggplot2)
+for (i in seq_along(mainmarkers)) {
+  FeaturePlot(immune.combined.sct, features = mainmarkers[i], min.cutoff = "q10",
+              cols = c("lightgrey" ,"#DE1F1F"),
+              slot = "data",label.size = 6,pt.size = 1)+  
+    annotate(geom = 'segment', y = Inf, yend = Inf, color = 'black', x = -Inf, xend = Inf, size = 0.75)+#
+    annotate(geom = 'segment', x = Inf, xend = Inf, color = 'black', y = -Inf, yend = Inf, size = 0.75) 
+  ggsave(paste0("FeaturePlot_mainmarkers_", mainmarkers[i], ".pdf"), path = "marker", width = 10, height =8, units = "cm")
+}
+
+
+#UMAP for novel markers
+features=c("Dnah12","Rorb","Prr5l","Mecom","Kank1","Fgfr2","Satb2")
+mainmarkers <- features
+
+library(ggplot2)
+for (i in seq_along(mainmarkers)) {
+  FeaturePlot(immune.combined.sct, features = mainmarkers[i], min.cutoff = "q10",
+              cols = c("lightgrey" ,"#DE1F1F"),
+              slot = "data",label.size = 6,pt.size = 1)+  
+    annotate(geom = 'segment', y = Inf, yend = Inf, color = 'black', x = -Inf, xend = Inf, size = 0.75)+#
+    annotate(geom = 'segment', x = Inf, xend = Inf, color = 'black', y = -Inf, yend = Inf, size = 0.75) 
+  ggsave(paste0("FeaturePlot_mainmarkers_", mainmarkers[i], ".pdf"), path = "marker", width = 10, height =8, units = "cm")
+}
+

@@ -1,0 +1,142 @@
+---
+title: "FigS2_DEGs"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Differential gene expression
+my7colors <- c( '#58A4C3',  '#AA9A59', '#E63863', '#E39A35', '#6778AE', '#91D0BE', '#B53E2B',
+                '#712820', '#DCC1DD', '#CCE0F5', '#CCC9E6', '#625D9E', '#68A180', '#3A6963',
+                '#968175')
+Idents(immune.combined.sct)=immune.combined.sct@meta.data$celltype
+immune.combined.sct <- NormalizeData(immune.combined.sct, verbose=F)
+
+library(tidyverse)
+library(org.Mm.eg.db)
+library(clusterProfiler)
+library(ggrepel)
+#Neuron
+neuron.mTBI <- subset(immune.combined.sct ,idents = "Neuron")
+Idents(neuron.mTBI) <- "orig.ident"
+neuron.mTBI.deg=FindMarkers(neuron.mTBI,ident.1 = "Control",ident.2 = "mTBI")
+avg.neuron.mTBI <- log1p(AverageExpression(neuron.mTBI, verbose = FALSE)$RNA)
+avg.neuron.mTBI= as.data.frame(avg.neuron.mTBI)
+avg.neuron.mTBI$gene <- rownames(avg.neuron.mTBI)
+genes.to.label = rownames(neuron.mTBI.deg)[1:30]
+avg.neuron.mTBI$Sig="NO_DIFF"
+avg.neuron.mTBI$Sig[avg.neuron.mTBI$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.neuron.mTBI, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.neuron.mTBI[rownames(neuron.mTBI.deg)[1:10],]
+
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Neuron") + theme(plot.title = element_text(hjust = 0.5))
+
+#Astrocyte
+Astrocyte <- subset(immune.combined.sct ,idents = "Astrocyte & NSC")
+Idents(Astrocyte) <- "orig.ident"
+Astrocyte.deg=FindMarkers(Astrocyte,ident.1 = "Control",ident.2 = "mTBI")
+avg.Astrocyte <- log1p(AverageExpression(Astrocyte, verbose = FALSE)$RNA)#+1取lg
+avg.Astrocyte= as.data.frame(avg.Astrocyte)
+avg.Astrocyte$gene <- rownames(avg.Astrocyte)
+genes.to.label = rownames(Astrocyte.deg)[1:30]
+avg.Astrocyte$Sig="NO_DIFF"
+avg.Astrocyte$Sig[avg.Astrocyte$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.Astrocyte, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.Astrocyte[rownames(Astrocyte.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Astrocyte & NSC") + theme(plot.title = element_text(hjust = 0.5))
+
+#Ologodendrocyte
+Oligodendrocyte <- subset(immune.combined.sct ,idents = "Oligodendrocyte")
+Idents(Oligodendrocyte) <- "orig.ident"
+Oligodendrocyte.deg=FindMarkers(Oligodendrocyte,ident.1 = "Control",ident.2 = "mTBI")
+avg.Oligodendrocyte <- log1p(AverageExpression(Oligodendrocyte, verbose = FALSE)$RNA)
+avg.Oligodendrocyte= as.data.frame(avg.Oligodendrocyte)
+avg.Oligodendrocyte$gene <- rownames(avg.Oligodendrocyte)
+genes.to.label = rownames(Oligodendrocyte.deg)[1:30]
+avg.Oligodendrocyte$Sig="NO_DIFF"
+avg.Oligodendrocyte$Sig[avg.Oligodendrocyte$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.Oligodendrocyte, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.Oligodendrocyte[rownames(Oligodendrocyte.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Oligodendrocyte") + theme(plot.title = element_text(hjust = 0.5))
+
+#Microglia
+Microglia <- subset(immune.combined.sct ,idents = "Microglia")
+Idents(Microglia) <- "orig.ident"
+Microglia.deg=FindMarkers(Microglia,ident.1 = "Control",ident.2 = "mTBI")
+avg.Microglia <- log1p(AverageExpression(Microglia, verbose = FALSE)$RNA)
+avg.Microglia= as.data.frame(avg.Microglia)
+avg.Microglia$gene <- rownames(avg.Microglia)
+genes.to.label = rownames(Microglia.deg)[1:30]
+avg.Microglia$Sig="NO_DIFF"
+avg.Microglia$Sig[avg.Microglia$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.Microglia, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.Microglia[rownames(Microglia.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Microglia") + theme(plot.title = element_text(hjust = 0.5))
+
+#OPC
+OPC <- subset(immune.combined.sct ,idents = "OPC")
+Idents(OPC) <- "orig.ident"
+OPC.deg=FindMarkers(OPC,ident.1 = "Control",ident.2 = "mTBI")
+avg.OPC<- log1p(AverageExpression(OPC, verbose = FALSE)$RNA)
+avg.OPC= as.data.frame(avg.OPC)
+avg.OPC$gene <- rownames(avg.OPC)
+genes.to.label = rownames(OPC.deg)[1:30]
+avg.OPC$Sig="NO_DIFF"
+avg.OPC$Sig[avg.OPC$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.OPC, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.OPC[rownames(OPC.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("OPC") + theme(plot.title = element_text(hjust = 0.5))
+
+#Endocelia
+Endocelia <- subset(immune.combined.sct ,idents = "Endocelia")
+Idents(Endocelia) <- "orig.ident"
+Endocelia.deg=FindMarkers(Endocelia,ident.1 = "Control",ident.2 = "mTBI")
+avg.Endocelia <- log1p(AverageExpression(Endocelia, verbose = FALSE)$RNA)
+avg.Endocelia= as.data.frame(avg.Endocelia)
+avg.Endocelia$gene <- rownames(avg.Endocelia)
+genes.to.label = rownames(Endocelia.deg)[1:30]
+avg.Endocelia$Sig="NO_DIFF"
+avg.Endocelia$Sig[avg.Endocelia$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.Endocelia, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.Endocelia[rownames(Endocelia.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Endothelia") + theme(plot.title = element_text(hjust = 0.5))
+
+Ependymal <- subset(immune.combined.sct ,idents = "Ependymal")
+Idents(Ependymal) <- "orig.ident"
+Ependymal.deg=FindMarkers(Ependymal,ident.1 = "Control",ident.2 = "mTBI")
+avg.Ependymal <- log1p(AverageExpression(Ependymal, verbose = FALSE)$RNA)
+avg.Ependymal= as.data.frame(avg.Ependymal)
+avg.Ependymal$gene <- rownames(avg.Ependymal)
+genes.to.label = rownames(Ependymal.deg)[1:30]
+avg.Ependymal$Sig="NO_DIFF"
+avg.Ependymal$Sig[avg.Ependymal$gene %in%genes.to.label]="DIFF"
+
+p=ggplot(avg.Ependymal, aes(Control, mTBI))+xlim(0,4.5)+ylim(0,4.5)+
+  geom_point(aes(color=Sig),size=1)+theme_classic()+
+  scale_color_manual(values = c("#f53f38","#b6bbc2"))
+data_selected <- avg.Ependymal[rownames(Ependymal.deg)[1:10],]
+p + geom_label_repel(data=data_selected,label.size=0.1,size =3,
+                     aes(label=rownames(data_selected)))+ggtitle("Ependymal") + theme(plot.title = element_text(hjust = 0.5))

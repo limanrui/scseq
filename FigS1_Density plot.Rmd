@@ -1,0 +1,52 @@
+---
+title: "FigS1_Density plot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Density plot
+scRNA1=immune.combined.sct
+
+pt_size = 1
+DimPlot(scRNA1,reduction = "umap")
+x=as.data.frame(scRNA1@active.ident)
+
+df <- scRNA1@reductions$umap@cell.embeddings
+df <- cbind(df, as.data.frame(scRNA1@meta.data))
+
+get_density <- function(x, y, ...) {
+  dens <- MASS::kde2d(x, y, ...)
+  ix <- findInterval(x, dens$x)
+  iy <- findInterval(y, dens$y)
+  ii <- cbind(ix, iy)
+  return(dens$z[ii])
+}
+
+df$orig.ident
+for (i in unique(df$orig.ident)) {
+  id <- which(df$orig.ident==i)
+  gd <- get_density(df$UMAP_1[id], df$UMAP_2[id], n = 100)
+  df[id,'Density'] <- gd/max(gd)
+}
+
+font_size = 15
+point_size = 0.1
+point_shape = '.'
+point_alpha = 0.5
+point_size=0.5
+point_shape=15
+col_variable = NULL
+breaks = seq(0,1,0.25)
+library(ggplot2)
+ggplot(df,aes(x = UMAP_1,y = UMAP_2, col = Density)) +
+  geom_point(size = point_size, shape = point_shape, alpha = point_alpha) +
+  theme_classic(base_size = font_size) +
+  
+  facet_grid(.~orig.ident) +
+  scale_colour_viridis_c(option = 'C',direction = 1,breaks = breaks) +
+  theme(legend.position = 'right',
+        strip.text.y.right = element_text(angle = 0),
+        strip.text = element_text(size = font_size)) +
+  guides(color = guide_colorbar(title.vjust = 1,
+                                barwidth = 1,
+                                barheight = 5))
