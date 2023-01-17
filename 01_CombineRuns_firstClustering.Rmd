@@ -1,0 +1,182 @@
+---
+title: "CombineRuns_firstClustering.Rmd"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Load libraries and data
+library(Seurat)
+library(tidyverse)
+library(dplyr)
+library(patchwork)
+
+x=list.files()
+
+dir = c('ControlSVZ/', "mTBISVZ/")
+names(dir) = c('Control',  'mTBI')      
+
+counts <- Read10X(data.dir =dir)
+
+scRNA1 = CreateSeuratObject(counts,min.cells = 3, min.features = 200)
+
+table(scRNA1@meta.data$orig.ident)
+
+#quality control
+scRNA1[["percent.mt"]] <- PercentageFeatureSet(scRNA1, pattern = "^mt-")
+
+blue <- "#619CD6"
+green <- "#89C32E"
+violin1 <- VlnPlot(scRNA1,
+                   features = c( "nFeature_RNA"), 
+                   cols =c(blue, green), 
+                   pt.size = 0, 
+                   ncol = 1) + 
+  geom_boxplot(width=.2,col="black",fill="white")+  
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+
+violin2 <- VlnPlot(scRNA1,
+                   features = c("nCount_RNA"), 
+                   cols =c(blue, green), 
+                   pt.size = 0, 
+                   ncol = 1) +
+  geom_boxplot(width=.2,col="black",fill="white")+ 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+
+
+violin3 <- VlnPlot(scRNA1,
+                   features = c("percent.mt"), 
+                   cols =c(blue, green),  
+                   pt.size = 0,
+                   ncol = 1) + 
+  geom_boxplot(width=.2,col="black",fill="white")+ 
+  theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank()) 
+
+violin1
+violin2
+violin3
+
+plot1=FeatureScatter(scRNA1, feature1 = "nCount_RNA",cols =c(blue, green),   feature2 = "percent.mt")
+plot2=FeatureScatter(scRNA1, feature1 = "nCount_RNA",cols =c(blue, green),   feature2 = "nFeature_RNA")
+pearplot <- CombinePlots(plots = list(plot1, plot2), nrow=1, legend="none") 
+
+plot1
+plot2
+pearplot
+#Filtration
+scRNA2 <- subset(scRNA1, subset = nFeature_RNA > 500& nFeature_RNA < 7500 & percent.mt < 10 & nCount_RNA < 20000 & nCount_RNA > 1000)
+table(scRNA2@meta.data$orig.ident)
+dim(scRNA1) 
+dim(scRNA2)
+
+scRNA2.list <- SplitObject(scRNA2, split.by = "orig.ident")
+
+save(scRNA2.list ,file = "scRNAlist.Rdata")
+#######################################################################################
+
+#integration and dimensionality reduction
+
+load("D:/R/TCF7L1/scRNAlist.Rdata")
+
+scRNA2.list <- lapply(X = scRNA2.list, FUN = SCTransform, method = "glmGamPoi")
+
+features <- SelectIntegrationFeatures(object.list = scRNA2.list, nfeatures = 3000)
+
+scRNA2.list <- PrepSCTIntegration(object.list = scRNA2.list, anchor.features = features)
+
+scRNA2.list <- lapply(X = scRNA2.list, FUN = RunPCA, features = features)
+
+immune.anchors <- FindIntegrationAnchors(object.list = scRNA2.list, normalization.method = "SCT",
+                                         anchor.features = features, dims = 1:30, reduction = "rpca", k.anchor = 20)
+immune.combined.sct <- IntegrateData(anchorset = immune.anchors, normalization.method = "SCT", dims = 1:30)
+
+save(immune.combined.sct,file = "IntegrateData.Rdata")
+
+#PCA dimensional reduction
+DefaultAssay(immune.combined.sct) <- "integrated"
+immune.combined.sct <- ScaleData(immune.combined.sct, verbose = FALSE)
+immune.combined.sct <- RunPCA(immune.combined.sct, npcs = 30, verbose = FALSE)
+plot1 <- DimPlot(immune.combined.sct, reduction = "pca", group.by="orig.ident",pt.size = 1) 
+
+plot1 
+immune.combined.sct <- FindNeighbors(immune.combined.sct, reduction = "pca", dims = 1:30)
+immune.combined.sct <- FindClusters(immune.combined.sct, resolution = 0.14)
+table(immune.combined.sct @meta.data$seurat_clusters)
+
+#UMAP
+immune.combined.sct<- RunUMAP(immune.combined.sct, dims = 1:30)
+embed_umap <- Embeddings(immune.combined.sct, 'umap')
+write.csv(embed_umap,'embed_umap.csv') 
+plot1 = DimPlot(immune.combined.sct, reduction = "umap") 
+plot1
+plot2 = DimPlot(immune.combined.sct, reduction = "umap", group.by = "orig.ident")
+plot2
+plot3 = DimPlot(immune.combined.sct, reduction = "umap", label = TRUE)
+plot3
+
+save(immune.combined.sct,file = "scRNA1.Rdata")
+#######################################################################################
+
+load("D:/R/TCF7L1/scRNA1.Rdata")
+
+DefaultAssay(immune.combined.sct) <- "RNA"
+immune.combined.sct <- NormalizeData(immune.combined.sct, verbose=F)
+
+plot1 = DimPlot(immune.combined.sct, reduction = "umap",cols = my7colors,pt.size = 1) 
+plot1
+plot2 = DimPlot(immune.combined.sct, reduction = "umap", ,split.by = "orig.ident", cols = my36colors, label = TRUE,,pt.size = 1)
+plot2
+
+#Detecting DEGs and defining cell type
+library(limma)
+markers <- FindAllMarkers(object = immune.combined.sct, test.use="wilcox" ,
+                          min.pct = 0.25,
+                          only.pos = TRUE,
+                          logfc.threshold = 0.25) 
+
+#筛选p值0.05
+all.markers =markers %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+
+write.csv(all.markers, file = "significant.markers.0.25.csv")
+save(all.markers, file = "0.25all.markers.Rdata") 
+
+new.cluster.ids <- c("0"="Neuron", 
+                     "1"="Neuron", 
+                     "2"="Oligodendrocyte", 
+                     "3"="Neuron", 
+                     "4"="Astrocyte & NSC", 
+                     "5"="Astrocyte & NSC", 
+                     "6"="Microglia", 
+                     "7"="Neuron",
+                     "8"="Neuron",
+                     "9"="OPC", 
+                     "10"="Astrocyte & NSC", 
+                     "11"="Endocelia", 
+                     "12"="Ependymal", 
+                     "13"="Neuron", 
+                     "14"="Neuron",
+                     "15"="Neuron",
+                     "16"="Neuron")
+
+immune.combined.sct <- RenameIdents(immune.combined.sct, new.cluster.ids)                        
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+
+degs <- FindAllMarkers(immune.combined.sct,  test.use="wilcox" ,
+                       logfc.threshold = 0.1,
+                       min.pct = 0.1, only.pos = T) 
+
+all.degs =degs %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+
+write.csv(all.degs, file = "all.degs.0.1.csv")
+save(degs.normalize, file = "0.1degs.normalize.Rdata") 
+
+degs.normalize <- FindAllMarkers(immune.combined.sct,  test.use="wilcox" ,
+                                 logfc.threshold = 0.25,
+                                 min.pct = 0.25, only.pos = T) 
+degs.normalize =degs.normalize %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+
+write.csv(degs.normalize, file = "all.degs.0.25.csv")
+
+save(degs.normalize, file = "degs.normalize.Rdata") 
+
+Idents(immune.combined.sct)=immune.combined.sct@meta.data$celltype

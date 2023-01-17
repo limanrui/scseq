@@ -1,0 +1,65 @@
+---
+title: "pseudotime"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#pseudotime
+setwd("D:/R/TCF7L1")
+load("D:/R/TCF7L1/scRNA-subtype2.named.Rdata")
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+
+library(monocle)
+library(tidyverse)
+data <- as(as.matrix(immune.combined.sct@assays$RNA@counts), 'sparseMatrix')
+
+pd <- new('AnnotatedDataFrame', data = immune.combined.sct@meta.data)
+fData <- data.frame(gene_short_name = row.names(data), row.names = row.names(data))
+fd <- new('AnnotatedDataFrame', data = fData)
+monocle_cds <- newCellDataSet(data,
+                              phenoData = pd,
+                              featureData = fd,
+                              lowerDetectionLimit = 0.5,
+                              expressionFamily = negbinomial.size())
+
+monocle_cds <- estimateSizeFactors(monocle_cds)
+monocle_cds <- estimateDispersions(monocle_cds)
+
+
+HSMM=monocle_cds
+disp_table <- dispersionTable(HSMM)
+disp.genes <- subset(disp_table, mean_expression >= 0.1 & dispersion_empirical >= 1 * dispersion_fit)$gene_id
+
+HSMM <- setOrderingFilter(HSMM, disp.genes)
+plot_ordering_genes(HSMM)
+
+HSMM <- reduceDimension(HSMM, max_components = 2,
+                        method = 'DDRTree')
+
+HSMM <- orderCells(HSMM)
+
+GM_state <- function(cds){
+  if (length(unique(pData(cds)$State)) > 1){
+    T0_counts <- table(pData(cds)$State, pData(cds)$seurat_clusters)[,"0"]
+    return(as.numeric(names(T0_counts)[which
+                                       (T0_counts == max(T0_counts))]))
+  } else {
+    return (1)
+  }
+}
+HSMM <- orderCells(HSMM, root_state = GM_state(HSMM))
+
+#DEGs
+load("D:/R/TCF7L1/HSMM.Rdata")
+HSMM2 <-  detectGenes(HSMM)
+head(fData(HSMM2))
+expressed_genes=row.names(subset(fData(HSMM2),num_cells_expressed>=10)) #在部分基因里面找
+pseudotime_de <- differentialGeneTest(HSMM2[expressed_genes,],
+                                      fullModelFormulaStr = "~sm.ns(Pseudotime)")
+pseudotime_de <- pseudotime_de[order(pseudotime_de$qval), ] 
+write.table(pseudotime_de, file = "pseudotime_de.rds", quote = FALSE, sep = '\t', row.names = FALSE, col.names = TRUE) 
+
+states_de <- differentialGeneTest(HSMM2[expressed_genes,], 
+                                  fullModelFormulaStr = "~State") 
+states_de <- states_de[order(states_de$qval), ] 
+save(HSMM2, file = "HSMM_monocle.Rdata") 

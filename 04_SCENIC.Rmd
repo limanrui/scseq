@@ -1,0 +1,167 @@
+---
+title: "Scenic"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+##SCENIC
+##系统报错改为英文
+Sys.setenv(LANGUAGE = "en")
+##禁止转化为因子
+options(stringsAsFactors = FALSE)
+##清空环境
+rm(list=ls())
+
+install.packages("arrow")
+BiocManager::install(c("AUCell", "RcisTarget"))
+BiocManager::install(c("GENIE3")) # Optional. Can be replaced by GRNBoost
+BiocManager::install(c("zoo", "mixtools", "rbokeh"))
+BiocManager::install(c("DT", "NMF", "ComplexHeatmap", "R2HTML", "Rtsne"))
+BiocManager::install(c("doMC", "doRNG"))
+devtools::install_github("aertslab/SCopeLoomR", build_vignettes = TRUE)
+devtools::install_github("aertslab/SCENIC") 
+
+library(dplyr)
+library(Seurat)
+library(tidyverse)
+library(patchwork)
+library(SCENIC)
+library(harmony)
+getwd()
+setwd('E:/YQY/SCENIC/')
+load("E:/YQY/scRNA-subtype2.named.Rdata")
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+#Set up the analysis environment
+exprMat <- as.matrix(immune.combined.sct@assays$RNA@counts)
+mydbs <- c( "mm9__tss__centered__10kb__7species.mc9nr.feather","mm10__refseq-r80__500bp_up_and_100bp_down_tss.mc9nr.feather")
+names(mydbs) <- c("10kb","500bp")
+scenicOptions <- initializeScenic(org="mgi", 
+                                  nCores=7,
+                                  dbDir=mydbDIR, 
+                                  dbs = mydbs,
+                                  datasetTitle = "os")
+saveRDS(scenicOptions, "int/scenicOptions.rds")
+
+cellInfo <- data.frame(immune.combined.sct@meta.data)
+colnames(cellInfo)[which(colnames(cellInfo)=="orig.ident")] <- "sample"
+#head(cellInfo)
+colnames(cellInfo)[which(colnames(cellInfo)=="seurat_clusters")] <- "cluster"
+cellInfo <- cellInfo[,c("sample","cluster","celltype")]
+saveRDS(cellInfo,file = "int/cellInfo.RDS")
+
+genesKept <- geneFiltering(exprMat, scenicOptions, 
+                           minCountsPerGene = 3 * 0.01 * ncol(exprMat), 
+                           minSamples = ncol(exprMat) * 0.01)
+exprMat_filtered <- exprMat[genesKept, ]
+
+runCorrelation(exprMat_filtered, scenicOptions)
+
+exprMat_filtered_log <- log2(exprMat_filtered+1)
+runGenie3(exprMat_filtered_log, scenicOptions,nParts = 10)
+head("int/1.4_GENIE3_linkList.Rds")
+head(readRDS("int/1.4_GENIE3_linkList.Rds") )
+
+scenicOptions@settings$verbose <- TRUE
+scenicOptions@settings$nCores <- 1
+scenicOptions@settings$seed <- 123
+
+scenicOptions <- runSCENIC_1_coexNetwork2modules(scenicOptions
+#这步要跑很久！
+scenicOptions <- runSCENIC_2_createRegulons(scenicOptions)  
+
+##Set the regulon activity score and visualization in the analysis environment
+
+library(foreach)
+exprMat_all <- as.matrix(immune.combined.sct@assays$RNA@counts)
+exprMat_all <- log2(exprMat_all+1)
+
+runSCENIC_3_scoreCells(scenicOptions, exprMat=exprMat_all)
+
+runSCENIC_4_aucell_binarize(scenicOptions, exprMat=exprMat_all) 
+
+nPcs <- c(5)
+
+fileNames <- tsneAUC(scenicOptions, aucType="AUC", nPcs=nPcs, perpl=c(5,15,50))
+
+# Run t-SNE with different settings:
+fileNames <- tsneAUC(scenicOptions, aucType="AUC", nPcs=nPcs, perpl=c(5,15,50))
+fileNames <- tsneAUC(scenicOptions, aucType="AUC", nPcs=nPcs, perpl=c(5,15,50), onlyHighConf=TRUE, filePrefix="int/tSNE_oHC")
+#plot as PDF
+fileNames <- paste0("int/",grep(".Rds", grep("tSNE_", list.files("int"), value=T), value=T))
+par(mfrow=c(length(nPcs), 3))
+fileNames <- paste0("int/",grep(".Rds", grep("tSNE_AUC", list.files("int"), value=T, perl = T), value=T))
+plotTsne_compareSettings(fileNames, scenicOptions, showLegend=FALSE, varName="celltype",   cex=.5)
+tSNE_scenic <- readRDS(tsneFileName(scenicOptions))
+aucell_regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+
+library(KernSmooth)
+library(RColorBrewer)
+dens2d <- bkde2D(tSNE_scenic$Y, 1)$fhat
+image(dens2d, col=brewer.pal(9, "YlOrBr"), axes=FALSE)
+contour(dens2d, add=TRUE, nlevels=5, drawlabels=FALSE)
+
+AUCell::AUCell_plotTSNE(tSNE_scenic$Y, exprMat_all, aucell_regulonAUC[onlyNonDuplicatedExtended(rownames(aucell_regulonAUC))[c("Tcf7l1")],], plots="Expression")
+
+#par(bg = "black")
+par(mfrow=c(1,2))
+regulonNames <- c( "JUN","MYC")
+cellCol <- plotEmb_rgb(scenicOptions, regulonNames, aucType="AUC", aucMaxContrast=0.6)
+
+#REGULATORS for konwn cell type r cluster
+regulonAUC <- loadInt(scenicOptions, "aucell_regulonAUC")
+regulonAUC <- regulonAUC[onlyNonDuplicatedExtended(rownames(regulonAUC)),]
+regulonActivity_byCellType <- sapply(split(rownames(cellInfo), cellInfo$celltype),
+                                     function(cells) rowMeans(getAUC(regulonAUC)[,cells]))
+
+regulonActivity_byCellType_Scaled <- t(scale(t(regulonActivity_byCellType), center = T, scale=T))
+
+ComplexHeatmap::Heatmap(regulonActivity_byCellType_Scaled[1:225,], name="Regulon activity")
+
+
+topRegulators <- reshape2::melt(regulonActivity_byCellType_Scaled)
+colnames(topRegulators) <- c("Regulon", "CellType", "RelativeActivity")
+topRegulators <- topRegulators[which(topRegulators$RelativeActivity>0),]
+viewTable(topRegulators)
+
+#image binaryzation
+minPerc <- .7
+binaryRegulonActivity <- loadInt(scenicOptions, "aucell_binary_nonDupl")
+cellInfo_binarizedCells <- cellInfo[which(rownames(cellInfo)%in% colnames(binaryRegulonActivity)),, drop=FALSE]
+regulonActivity_byCellType_Binarized <- sapply(split(rownames(cellInfo_binarizedCells), cellInfo_binarizedCells$celltype), 
+                                               function(cells) rowMeans(binaryRegulonActivity[,cells, drop=FALSE]))
+binaryActPerc_subset <- regulonActivity_byCellType_Binarized[which(rowSums(regulonActivity_byCellType_Binarized>minPerc)>0),]
+ComplexHeatmap::Heatmap(binaryActPerc_subset[1:39,], name="Regulon activity (%)", col = c("white","pink","red"))
+
+topRegulators <- reshape2::melt(regulonActivity_byCellType_Binarized)
+colnames(topRegulators) <- c("Regulon", "CellType", "RelativeActivity")
+topRegulators <- topRegulators[which(topRegulators$RelativeActivity>minPerc),]
+viewTable(topRegulators)
+
+rss <- calcRSS(AUC=getAUC(regulonAUC), cellAnnotation=cellInfo[colnames(regulonAUC), "celltype"])
+rssPlot <- plotRSS(rss)
+plotly::ggplotly(rssPlot$plot)
+
+#seurat Visual scenic results
+AUCmatrix <- readRDS("int/3.4_regulonAUC.Rds")
+AUCmatrix <- AUCmatrix@assays@data@listData$AUC
+AUCmatrix <- data.frame(t(AUCmatrix), check.names=F)
+RegulonName_AUC <- colnames(AUCmatrix)
+RegulonName_AUC <- gsub(' \\(','_',RegulonName_AUC)
+RegulonName_AUC <- gsub('\\)','',RegulonName_AUC)
+colnames(AUCmatrix) <- RegulonName_AUC
+scRNAauc <- AddMetaData(immune.combined.sct, AUCmatrix)
+scRNAauc@assays$integrated <- NULL
+saveRDS(scRNAauc,'scRNAauc.rds')
+
+BINmatrix <- readRDS("int/4.1_binaryRegulonActivity.Rds")
+BINmatrix <- data.frame(t(BINmatrix), check.names=F)
+RegulonName_BIN <- colnames(BINmatrix)
+RegulonName_BIN <- gsub(' \\(','_',RegulonName_BIN)
+RegulonName_BIN <- gsub('\\)','',RegulonName_BIN)
+colnames(BINmatrix) <- RegulonName_BIN
+scRNAbin <- AddMetaData(immune.combined.sct, BINmatrix)
+scRNAbin@assays$integrated <- NULL
+saveRDS(scRNAbin, 'scRNAbin.rds')
+
+dir.create('scenic_seurat')

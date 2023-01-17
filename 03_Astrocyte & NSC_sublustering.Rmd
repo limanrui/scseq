@@ -1,0 +1,171 @@
+---
+title: "Astrocyte & NSC_sublustering.Rmd"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+setwd("D:/R/TCF7L1")
+library(dplyr)
+library(Seurat)
+library(tidyverse)
+library(patchwork)
+library(tidyverse)
+library(limma)
+library(pheatmap)
+library(viridis)
+library(reshape2)
+library(ggplot2)
+library(ggrepel)
+library(msigdbr)
+load("D:/R/TCF7L1/scRNA1.Rdata")
+
+#
+new.cluster.ids <- c("0"="Neuron", 
+                     "1"="Neuron", 
+                     "2"="Oligodendrocyte", 
+                     "3"="Neuron", 
+                     "4"="Astrocyte & NSC", 
+                     "5"="Astrocyte & NSC", 
+                     "6"="Microglia", 
+                     "7"="Neuron",
+                     "8"="Neuron",
+                     "9"="OPC", 
+                     "10"="Astrocyte & NSC", 
+                     "11"="Endocelia", 
+                     "12"="Ependymal", 
+                     "13"="Neuron", 
+                     "14"="Neuron",
+                     "15"="Neuron",
+                     "16"="Neuron")
+
+immune.combined.sct <- RenameIdents(immune.combined.sct, new.cluster.ids)                        
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+
+DimPlot(immune.combined.sct,label = TRUE,cols=my7colors,pt.size = 1)
+
+Idents(immune.combined.sct)=immune.combined.sct@meta.data$celltype
+scRNA.subtype=subset(immune.combined.sct,ident="Astrocyte & NSC")
+
+save(scRNA.subtype,file = "scRNA.subtypeAstrocyte.Rdata")
+
+#Dimensionality reduction clustering
+rm(list=ls())
+load("D:/R/TCF7L1/scRNA.subtypeAstrocyte.Rdata")
+
+scRNA2.list <- SplitObject(scRNA.subtype, split.by = "orig.ident")
+
+scRNA2.list <- lapply(X = scRNA2.list, FUN = SCTransform, method = "glmGamPoi")
+
+features <- SelectIntegrationFeatures(object.list = scRNA2.list, nfeatures = 3000)
+
+scRNA2.list <- PrepSCTIntegration(object.list = scRNA2.list, anchor.features = features)
+
+scRNA2.list <- lapply(X = scRNA2.list, FUN = RunPCA, features = features)
+
+immune.anchors <- FindIntegrationAnchors(object.list = scRNA2.list, normalization.method = "SCT",
+                                         anchor.features = features, dims = 1:30, reduction = "rpca", k.anchor = 20)
+immune.combined.sct <- IntegrateData(anchorset = immune.anchors, normalization.method = "SCT", dims = 1:30)
+
+save(immune.combined.sct,file = "IntegrateData-subtype.Rdata")
+
+
+DefaultAssay(immune.combined.sct) <- "integrated"
+immune.combined.sct <- ScaleData(immune.combined.sct, verbose = FALSE)
+immune.combined.sct <- RunPCA(immune.combined.sct, npcs = 30, verbose = FALSE)
+plot1 <- DimPlot(immune.combined.sct, reduction = "pca", group.by="orig.ident") 
+
+plot1 
+immune.combined.sct <- FindNeighbors(immune.combined.sct, reduction = "pca", dims = 1:30)
+immune.combined.sct <- FindClusters(immune.combined.sct, resolution = 0.15)
+table(immune.combined.sct @meta.data$seurat_clusters)
+immune.combined.sct<- RunUMAP(immune.combined.sct, dims = 1:30)
+embed_umap <- Embeddings(immune.combined.sct, 'umap')
+write.csv(embed_umap,'embed_umap_subtype.csv') 
+
+mysubtypecolors<- c("#3b6291","#943c39","#779043","#624c7c","#388498","#bf7334","#ffa510","#f74d4d")
+groupcolor <- c("#BC3C29","#0072B5")
+
+plot2 = DimPlot(immune.combined.sct, reduction = "umap", group.by = "orig.ident",cols = groupcolor,pt.size = 1)
+plot2
+
+plot3 = DimPlot(immune.combined.sct, reduction = "umap", label = TRUE, pt.size = 1)
+plot3
+save(immune.combined.sct,file = "scRNA-subtype.Rdata")
+
+#Defining subclusters
+load("D:/R/TCF7L1/scRNA-subtype.Rdata")
+write.csv(immune.combined.sct@meta.data, file = "subtype gene and count.csv")
+
+DefaultAssay(immune.combined.sct) <- "RNA"
+#marker
+immune.combined.sct <- NormalizeData(immune.combined.sct, verbose=F)
+
+library(limma)
+markers <- FindAllMarkers(object = immune.combined.sct, test.use="wilcox" ,
+                          min.pct = 0.25,
+                          only.pos = TRUE,
+                          logfc.threshold = 0.25) 
+
+all.markers =markers %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+getwd()
+write.csv(all.markers, file = "subtype2.significant.markers.0.25.csv")
+
+new.cluster.ids <- c("0"="Astrocytes", 
+                     "1"="Neuroblasts", 
+                     "2"="early aNSC", 
+                     "3"="qNSC", 
+                     "4"="late aNSCs", 
+                     "5"="Neuron", 
+                     "6"="Oligodendrocyte", 
+                     "7"="Astrocytes")
+immune.combined.sct <- RenameIdents(immune.combined.sct, new.cluster.ids)                        
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+
+mysubtypecolors<-c("#3b6291","#943c39","#779043","#624c7c","#388498","#bf7334","#ffa510","#f74d4d")
+
+groupcolor <- c("#BC3C29","#0072B5")
+
+plot3 = DimPlot(immune.combined.sct,label = TRUE,cols=mysubtypecolors,pt.size = 1)
+plot3
+
+plot4 =DimPlot(immune.combined.sct, reduction = "umap",split.by = "orig.ident",pt.size = 1,cols = mysubtypecolors)
+plot4
+save(immune.combined.sct,file = "scRNA-subtype.named.Rdata")
+
+##########################################
+#exclude neuron and oligo
+load("D:/R/TCF7L1/scRNA-subtype.named.Rdata")
+
+Idents(immune.combined.sct)=immune.combined.sct@meta.data$celltype
+
+immune.combined.sct=subset(immune.combined.sct,ident=c("Astrocytes","Neuroblasts","early aNSC","qNSC","late aNSCs"))
+
+immune.combined.sct$celltype <- immune.combined.sct@active.ident
+
+save(immune.combined.sct,file = "scRNA-subtype2.named.Rdata")
+
+##########################################
+#DEGs
+load("D:/R/TCF7L1/scRNA-subtype2.named.Rdata")
+
+groupcolor <- c("#BC3C29","#0072B5")
+
+mysubtypecolors<- c("#3b6291","#943c39","#779043","#624c7c","#388498","#bf7334","#ffa510","#f74d4d")
+
+plot3 = DimPlot(immune.combined.sct,label = TRUE,cols=mysubtypecolors,pt.size = 1)
+plot3
+plot2 = DimPlot(immune.combined.sct, reduction = "umap", group.by = "orig.ident",cols = groupcolor,pt.size = 1)
+plot2
+
+library(limma)
+markers <- FindAllMarkers(object = immune.combined.sct, test.use="wilcox" ,
+                          min.pct = 0.25,
+                          only.pos = TRUE,
+                          logfc.threshold = 0.25) 
+
+all.markers =markers %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+write.csv(all.markers, file = "subtype2.significant.markers.0.25.csv")
+save(all.markers, file = "subtypemarkers.0.25.Rdata") 
+
+
