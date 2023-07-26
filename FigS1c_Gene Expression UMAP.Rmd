@@ -1,0 +1,21 @@
+---
+title: "FigS1c_Gene Expression UMAP"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Data loading
+load("D:/R/TCF7L1/immune.combined.sct.named.RData")
+#Gene choosing
+features=c("Meg3","Syt1","Mog","Enpp2","Slc1a3","P2ry12","Cx3cr1","Pdgfra","Fyn","Flt1","Rgs5","Aqp4","Ccdc153")
+mainmarkers <- features
+#install.packages("ggsave2")
+library(ggplot2)
+for (i in seq_along(mainmarkers)) {
+  FeaturePlot(immune.combined.sct, features = mainmarkers[i], min.cutoff = "q10",#10%，90%限定
+              cols = c("lightgrey" ,"#DE1F1F"),
+              slot = "data",label.size = 6,pt.size = 1)+  
+    annotate(geom = 'segment', y = Inf, yend = Inf, color = 'black', x = -Inf, xend = Inf, size = 0.75)+#加边框（ annotate
+    annotate(geom = 'segment', x = Inf, xend = Inf, color = 'black', y = -Inf, yend = Inf, size = 0.75) 
+  ggsave(paste0("FeaturePlot_mainmarkers_", mainmarkers[i], ".pdf"), path = "marker", width = 10, height =8, units = "cm")
+}

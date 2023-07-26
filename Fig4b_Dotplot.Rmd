@@ -1,0 +1,23 @@
+---
+title: "Fig4_Dotplot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+#Dot plot
+load("D:/R/TCF7L1/subtypedegs.normalize.0.25.Rdata")
+markers <- c("Mertk","Grin2c","Cpne4","Dcx","Thbs4","Adamts18","Kank1","Ntsr2","Mki67","Egfr")
+markers <- c("Adamts18","Fabp7","Blbp","Cd9","Dcx","Meg3","Egfr","Cdk1","Nes","Slc3a1","Hes5")
+markers <- c("Adamts18","Fabp7","Blbp","Cd9","Dcx","Meg3","Egfr","Cdk1","Nes","Slc3a1","Hes5")
+
+library( viridis)
+p <-DotPlot(immune.combined.sct, features = markers ) + coord_flip()
+p
+dot.data=p[["data"]]
+colnames(dot.data)
+ggplot(dot.data,aes(x=id, y = features.plot, color = avg.exp.scaled, size = pct.exp)) + 
+  geom_point() +cowplot::theme_cowplot() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  #theme(axis.ticks = element_blank()) +
+  scale_color_gradientn(colours = viridis::viridis(20), limits = c(-1,1.5), oob = scales::squish, name = 'expression')

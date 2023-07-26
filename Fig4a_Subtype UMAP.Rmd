@@ -1,0 +1,17 @@
+---
+title: "Fig4a_Subtype UMAP"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Data loading
+load("D:/R/TCF7L1/scRNA-subtype2.named.Rdata")
+
+groupcolor <- c("#BC3C29","#0072B5")
+
+mysubtypecolors<- c("#3b6291","#943c39","#779043","#624c7c","#388498","#bf7334","#ffa510","#f74d4d")
+
+plot3 = DimPlot(immune.combined.sct,label = TRUE,cols=mysubtypecolors,pt.size = 1)
+plot3
+plot2 = DimPlot(immune.combined.sct, reduction = "umap", group.by = "orig.ident",cols = groupcolor,pt.size = 1)
+plot2

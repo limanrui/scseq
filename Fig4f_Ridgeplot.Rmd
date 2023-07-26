@@ -1,0 +1,27 @@
+---
+title: "Fig4_Ridgeplot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+library(Seurat)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(cowplot)
+library(ggridges)
+library(RColorBrewer)
+library(viridis)
+p1$data %>% ggplot(aes_string(x = "Tcf7l1", y = 'ident')) +
+  geom_density_ridges_gradient(aes(fill=stat(x)), scale = 2, rel_min_height = 0.00, size = 0.3) +
+  scale_fill_gradientn(name = "Gene Expression Level", colours = colorRampPalette(rev(brewer.pal(11,'Spectral')))(32)) +
+  theme_classic() + labs(caption = '核密度估计峰峦图', x='', y='', title = "Tcf7l1") +
+  theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))
+
+# Fill by expressed cells level of gene
+p1$data %>% ggplot(aes_string(x = "Tcf7l1", y = 'ident')) +
+  geom_density_ridges_gradient(aes(fill = ..density..), scale = 2, rel_min_height = 0.00, size = 0.3) +
+  scale_fill_gradientn(name = "Expressed cells Level", colours = colorRampPalette(rev(brewer.pal(11,'Spectral')))(32)) +
+  theme_classic() + labs(caption = '核密度估计峰峦图', x='', y='', title = "Tcf7l1") +
+  theme(plot.caption = element_text(hjust=0.5, size=rel(1.2)))

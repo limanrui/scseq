@@ -1,0 +1,26 @@
+---
+title: "Fig4_cell proportion"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+###################################################################################
+##cell proportion
+library(Seurat)
+library(ggplot2)
+library(dplyr)
+library(ggalluvial)
+
+Ratio <- immune.combined.sct@meta.data %>% 
+  group_by(orig.ident,celltype) %>% 
+  summarise(n=n()) %>%
+  mutate(relative_freq = n/sum(n)) 
+
+ggplot(Ratio, aes(x =orig.ident, y= relative_freq, fill = celltype,
+                  stratum=celltype, alluvium=celltype)) +
+  geom_col(width = 0.5, color='black')+
+  geom_flow(width=0.5,alpha=0.4, knot.pos=0.5)+ 
+  theme_classic() +
+  labs(x='Sample',y = 'Ratio')+
+  coord_flip()+
+  scale_fill_manual(values = my7colors)

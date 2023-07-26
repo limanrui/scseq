@@ -1,0 +1,22 @@
+---
+title: "FigureS3c_Dot plot"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+#Data loading
+load("D:/R/TCF7L1/subtypedegs.normalize.0.25.Rdata")
+
+#Dotplot
+markers <- c("Adamts18","Fabp7","Blbp","Cd9","Dcx","Meg3","Egfr","Cdk1","Nes","Slc3a1","Hes5")
+library( viridis)
+p <-DotPlot(immune.combined.sct, features = markers ) + coord_flip()
+p
+dot.data=p[["data"]]
+colnames(dot.data)
+ggplot(dot.data,aes(x=id, y = features.plot, color = avg.exp.scaled, size = pct.exp)) + 
+  geom_point() +cowplot::theme_cowplot() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +#x轴标题信息angle旋转90度
+  ylab('') +
+  #theme(axis.ticks = element_blank()) +#ticks(轴的线条)改为空白
+  scale_color_gradientn(colours = viridis::viridis(20), limits = c(-1,1.5), oob = scales::squish, name = 'expression')

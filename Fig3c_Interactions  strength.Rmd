@@ -1,0 +1,15 @@
+---
+title: "Fig3c_Interactions  strength"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+###Cell interaction strength comparison network diagram
+num.link <- sapply(cc.list, function(x) {rowSums(x@net$count) + colSums(x@net$count)-diag(x@net$count)})
+weight.MinMax <- c(min(num.link), max(num.link)) # control the dot size in the different datasets
+gg <- list()
+for (i in 1:length(cc.list)) {
+  gg[[i]] <- netAnalysis_signalingRole_scatter(cc.list[[i]], title = names(cc.list)[i], weight.MinMax = weight.MinMax)
+}
+patchwork::wrap_plots(plots = gg)

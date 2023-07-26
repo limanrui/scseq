@@ -1,0 +1,107 @@
+---
+title: "Fig2_KEGG UMAP"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+library(AUCell)
+library(ggplot2)
+library(Seurat)
+library(clusterProfiler)
+library(msigdbr)
+cells_rankings <- AUCell_buildRankings(immune.combined.sct@assays$RNA@data,  nCores=3, plotStats=TRUE) 
+
+c2 <- read.gmt("c2.cp.kegg.v7.4.symbols.gmt") 
+
+#lapply
+geneSets <- lapply(unique(c2$term), function(x){print(x);c2$gene[c2$term == x]})
+#named
+names(geneSets) <- unique(c2$term)
+#order
+cells_AUC <- AUCell_calcAUC(geneSets, cells_rankings,nCores =1, aucMaxRank=nrow(cells_rankings)*0.1)
+
+m_df<- msigdbr(species = "Mus musculus",  category = "C2", subcategory = "KEGG")
+fgsea_sets<- m_df %>% split(x = .$gene_symbol, f = .$gs_name)
+
+cells_AUC <- AUCell_calcAUC(fgsea_sets, cells_rankings,nCores =1, aucMaxRank=nrow(cells_rankings)*0.1)
+
+geneSet <- "KEGG_NUCLEOTIDE EXCISION REPAIR"
+aucs <- as.numeric(getAUC(cells_AUC)[geneSet, ])
+immune.combined.sct$AUC <- aucs
+df<- data.frame(immune.combined.sct@meta.data, immune.combined.sct@reductions$umap@cell.embeddings)
+#colnames(df)
+class_avg <- df %>%
+  group_by( seurat_clusters) %>%
+  summarise(
+    UMAP_1 = median(UMAP_1),
+    UMAP_2 = median(UMAP_2)
+  )
+ggplot(df, aes(UMAP_1, UMAP_2))  +
+  geom_point(aes(colour  = AUC)) + viridis::scale_color_viridis(option="A") +#ABCD改颜色
+  ggrepel::geom_label_repel(aes(label = seurat_clusters),
+                            data = class_avg,
+                            size = 5,
+                            label.size = 1,
+                            segment.color = NA
+  )+   theme(legend.position = "none") + theme_bw()+facet_grid(.~orig.ident)
+
+
+geneSet <- "KEGG_LONG-TERM POTENTIATION"
+aucs <- as.numeric(getAUC(cells_AUC)[geneSet, ])
+immune.combined.sct$AUC <- aucs
+df<- data.frame(immune.combined.sct@meta.data, immune.combined.sct@reductions$umap@cell.embeddings)
+#colnames(df)
+class_avg <- df %>%
+  group_by( seurat_clusters) %>%
+  summarise(
+    UMAP_1 = median(UMAP_1),
+    UMAP_2 = median(UMAP_2)
+  )
+ggplot(df, aes(UMAP_1, UMAP_2))  +
+  geom_point(aes(colour  = AUC)) + viridis::scale_color_viridis(option="A") +#ABCD改颜色
+  ggrepel::geom_label_repel(aes(label = seurat_clusters),
+                            data = class_avg,
+                            size = 5,
+                            label.size = 1,
+                            segment.color = NA
+  )+   theme(legend.position = "none") + theme_bw()+facet_grid(.~orig.ident)
+
+geneSet <- "KEGG_PPAR SIGNALING PATHWAY"
+aucs <- as.numeric(getAUC(cells_AUC)[geneSet, ])
+immune.combined.sct$AUC <- aucs
+df<- data.frame(immune.combined.sct@meta.data, immune.combined.sct@reductions$umap@cell.embeddings)
+#colnames(df)
+class_avg <- df %>%
+  group_by( seurat_clusters) %>%
+  summarise(
+    UMAP_1 = median(UMAP_1),
+    UMAP_2 = median(UMAP_2)
+  )
+ggplot(df, aes(UMAP_1, UMAP_2))  +
+  geom_point(aes(colour  = AUC)) + viridis::scale_color_viridis(option="A") +#ABCD改颜色
+  ggrepel::geom_label_repel(aes(label = seurat_clusters),
+                            data = class_avg,
+                            size = 5,
+                            label.size = 1,
+                            segment.color = NA
+  )+   theme(legend.position = "none") + theme_bw()+facet_grid(.~orig.ident)
+
+geneSet <- "KEGG_HISTIDINE METABOLISM"
+aucs <- as.numeric(getAUC(cells_AUC)[geneSet, ])
+immune.combined.sct$AUC <- aucs
+df<- data.frame(immune.combined.sct@meta.data, immune.combined.sct@reductions$umap@cell.embeddings)
+#colnames(df)
+class_avg <- df %>%
+  group_by( seurat_clusters) %>%
+  summarise(
+    UMAP_1 = median(UMAP_1),
+    UMAP_2 = median(UMAP_2)
+  )
+ggplot(df, aes(UMAP_1, UMAP_2))  +
+  geom_point(aes(colour  = AUC)) + viridis::scale_color_viridis(option="A") +#ABCD改颜色
+  ggrepel::geom_label_repel(aes(label = seurat_clusters),
+                            data = class_avg,
+                            size = 5,
+                            label.size = 1,
+                            segment.color = NA
+  )+   theme(legend.position = "none") + theme_bw()+facet_grid(.~orig.ident)
