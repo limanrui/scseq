@@ -1,0 +1,19 @@
+---
+title: "Fig1_UMAP.Rmd"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+my36colors <- c('#53A85F', '#F1BB72', '#F3B1A0', '#D6E7A3','#57C3F3', '#476D87','#E95C59', '#E59CC4', '#AB3282', '#23452F', '#BD956A', '#8C549C', '#585658','#9FA3A8', '#E0D4CA', '#5F3D69', '#C5DEBA', '#58A4C3', '#E4C755', '#F7F398','#AA9A59', '#E63863', '#E39A35', '#C1E6F3', '#6778AE', '#91D0BE', '#B53E2B','#712820', '#DCC1DD', '#CCE0F5', '#CCC9E6', '#625D9E', '#68A180', '#3A6963','#968175')
+
+my7colors <- c( '#58A4C3','#AA9A59','#E63863','#E39A35','#6778AE', '#91D0BE', '#B53E2B','#712820', '#DCC1DD', '#CCE0F5', '#CCC9E6', '#625D9E', '#68A180', '#3A6963','#968175')
+
+#UMAP clustered in celltype
+
+DimPlot(immune.combined.sct,label = TRUE,cols=my7colors,pt.size = 1)
+
+DimPlot(immune.combined.sct,cols=my7colors,pt.size = 1)
+
+DimPlot(immune.combined.sct, reduction = "umap",split.by = "orig.ident",pt.size = 1,cols = my7colors)
+

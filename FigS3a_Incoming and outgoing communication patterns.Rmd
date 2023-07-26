@@ -1,0 +1,22 @@
+---
+title: "FigS3a_Incoming and outgoing communication patterns"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+library(NMF)
+library(ggalluvial)
+#outgoing communication patterns
+selectK(cellchat, pattern = "outgoing")
+nPatterns = 3
+cellchat <- identifyCommunicationPatterns(cellchat, pattern = "outgoing", k = nPatterns)
+##river plot
+netAnalysis_river(cellchat, pattern = "outgoing")
+
+#Incoming communication patterns
+selectK(cellchat, pattern = "incoming")
+nPatterns = 4
+cellchat <- identifyCommunicationPatterns(cellchat, pattern = "incoming", k = nPatterns)
+##river plot
+netAnalysis_river(cellchat, pattern = "incoming")

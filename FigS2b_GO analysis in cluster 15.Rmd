@@ -1,0 +1,43 @@
+---
+title: "FigS2b_GO analysis in cluster 15"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+load("D:/R/TCF7L1/scRNA1.Rdata")
+library(Seurat)
+library(patchwork)
+library(clusterProfiler)
+library(org.Mm.eg.db)
+library(tidyverse)
+library(limma)
+
+degs.normalize <- FindAllMarkers(immune.combined.sct,  test.use="wilcox" ,
+                                 logfc.threshold = 0.1,
+                                 min.pct = 0.1, only.pos = T) 
+degs.normalize =all.markers %>% dplyr::select(gene, everything()) %>% subset(p_val<0.05)
+
+Idents(immune.combined.sct)=immune.combined.sct@meta.data$celltype
+
+
+sig_dge.all <- subset(degs.normalize, p_val_adj<0.05&abs(avg_log2FC)>0.15) 
+
+sig_dge.15 <- subset(sig_dge.all, avg_log2FC>0.15&cluster=="15") 
+ego_15 <- enrichGO(gene          = row.names(sig_dge.15),                     
+                       #universe     = row.names(dge.celltype),                     
+                       OrgDb         = 'org.Mm.eg.db',                     
+                       keyType       = 'SYMBOL',                     
+                       ont           = "BP",  
+                       pAdjustMethod = "BH",                     
+                       pvalueCutoff  = 0.01,                     
+                       qvalueCutoff  = 0.05) 
+
+ego_15 <- data.frame(ego_15) 
+write.csv(ego_15,file = 'enrichGO15.csv') 
+
+ego_15 <- ego_15[order(ego_15$p.adjust),] 
+ego_bp_top5 <- ego_15[1 : 5,] 
+ggplot(data=ego_bp_top5, aes(x=Description,y=Count)) +
+  geom_bar(stat="identity", width=0.8,fill='salmon1') +
+  coord_flip() +  xlab("GO term") + ylab("Num of Genes") +
+  theme_bw()

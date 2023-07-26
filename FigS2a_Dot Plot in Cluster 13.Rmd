@@ -1,0 +1,11 @@
+---
+title: "FigS2a_Dot Plot in Cluster 13"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+markers <- c("Grid2ip","Slc17a6","Shox2")
+library( viridis)
+p <-DotPlot(immune.combined.sct, features = markers ) + coord_flip()
+p

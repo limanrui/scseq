@@ -1,0 +1,19 @@
+---
+title: "FigureS1e_Gene Expresion UMAP"
+author: "Qiuyun Yang"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+features=c("Dnah12","Rorb","Prr5l","Mecom","Kank1","Fgfr2","Satb2")
+mainmarkers <- features
+#install.packages("ggsave2")
+library(ggplot2)
+for (i in seq_along(mainmarkers)) {
+  FeaturePlot(immune.combined.sct, features = mainmarkers[i], min.cutoff = "q10",#10%，90%限定
+              cols = c("lightgrey" ,"#DE1F1F"),
+              slot = "data",label.size = 6,pt.size = 1)+  
+    annotate(geom = 'segment', y = Inf, yend = Inf, color = 'black', x = -Inf, xend = Inf, size = 0.75)+#加边框（ annotate
+    annotate(geom = 'segment', x = Inf, xend = Inf, color = 'black', y = -Inf, yend = Inf, size = 0.75) 
+  ggsave(paste0("FeaturePlot_mainmarkers_", mainmarkers[i], ".pdf"), path = "marker", width = 10, height =8, units = "cm")
+}
